@@ -1,5 +1,3 @@
-let currentSketch = null;
-
 const topicInput = document.getElementById('topic');
 const vibeSelect = document.getElementById('vibe');
 const generateBtn = document.getElementById('generateBtn');
@@ -15,40 +13,51 @@ function setLoading(isLoading) {
 }
 
 function stopCurrentSketch() {
-  if (currentSketch) {
-    currentSketch.remove();
-    currentSketch = null;
-  }
   stageEl.innerHTML = '';
 }
 
 function runSketch(code, colors) {
   stopCurrentSketch();
 
-  const bg = colors?.background || '#0f172a';
+  const background = colors?.background || '#0f172a';
 
-  const sketch = (p) => {
-    p.setup = () => {};
-    p.draw = () => {};
+  // Build an isolated iframe document that loads p5.js in global mode
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('sandbox', 'allow-scripts');
+  iframe.style.width = '100%';
+  iframe.style.height = '400px';
+  iframe.style.border = 'none';
+  iframe.style.borderRadius = '8px';
+  iframe.style.backgroundColor = background;
 
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"><\/script>
+  <style>
+    body { margin: 0; padding: 0; overflow: hidden; background: ${background}; display: flex; justify-content: center; align-items: center; }
+    canvas { display: block; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <script>
     try {
-      // eslint-disable-next-line no-new-func
-      const userDraw = new Function('p', code);
-      userDraw(p);
+      ${code}
     } catch (err) {
-      console.error('Sketch error:', err);
-      statusEl.textContent = '动画代码运行出错，请尝试重新生成。';
-      return;
+      document.body.innerHTML = '<pre style="color:#fff;padding:20px;">动画运行出错：' + err.message + '</pre>';
+      console.error(err);
     }
+  <\/script>
+</body>
+</html>
+  `;
 
-    // Ensure canvas exists and apply background color to wrapper
-    const canvas = p.canvas;
-    if (canvas) {
-      canvas.style.backgroundColor = bg;
-    }
-  };
-
-  currentSketch = new p5(sketch, stageEl);
+  stageEl.appendChild(iframe);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
 }
 
 generateBtn.addEventListener('click', async () => {
