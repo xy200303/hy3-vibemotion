@@ -44,7 +44,7 @@ function runCodeAnimation(code, colors) {
   <meta charset="UTF-8">
   <style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: ${escapeHtml(background)}; display: flex; justify-content: center; align-items: center; }
-    canvas { display: block; max-width: 100%; max-height: 100%; border-radius: 8px; }
+    canvas { display: block; width: 100%; height: auto; border-radius: 8px; }
     #err { color: #ff6b6b; padding: 20px; font-family: monospace; white-space: pre-wrap; display: none; }
   </style>
 </head>
