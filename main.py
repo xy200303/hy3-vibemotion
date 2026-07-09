@@ -40,7 +40,7 @@ def get_hy3_client() -> OpenAI:
 
 def build_animation_prompt(topic: str, vibe: str) -> str:
     """Build the prompt that asks Hy3 to generate a p5.js animation."""
-    return f"""你是一位科普动画导演。请根据用户给出的科普主题，创作一段 30 秒左右的科普动画。
+    return f"""你是一位科普动画导演。请根据用户给出的科普主题，创作一段可在浏览器中循环播放的 p5.js 科普动画。
 
 主题：{topic}
 风格（Vibe）：{vibe}
@@ -56,14 +56,15 @@ def build_animation_prompt(topic: str, vibe: str) -> str:
     "secondary": "#RRGGBB",
     "accent": "#RRGGBB"
   }},
-  "code": "一段完整的 p5.js draw 函数体代码字符串。代码使用 p5.js 全局模式，仅包含 setup 和 draw 函数，画布大小 640x360。动画要简洁、有循环感，能直观表现主题。不要包含任何外部资源加载。"
+  "code": "一段完整的、可直接运行的 p5.js 全局模式代码字符串。必须包含 function setup() 和 function draw()。setup() 中只调用 createCanvas(640, 360)。draw() 中实现循环动画。只使用 p5.js 内置图形函数（ellipse, rect, line, arc, triangle, fill, stroke, background, translate, rotate, push, pop 等），不使用图片、字体、视频或外部资源。"
 }}
 
 注意：
-1. code 字段必须是一段合法的 JavaScript 字符串，可以直接被 eval 在 p5.js 环境中运行。
-2. 动画应是循环的，能持续播放。
-3. 颜色要符合 {vibe} 风格。
-4. 解说词要准确、通俗易懂。
+1. code 字段必须是一段合法的 JavaScript 代码，可以直接在浏览器中运行，不要包含中文注释。
+2. 只声明全局变量用于状态（如 let angle = 0;），动画逻辑在 draw() 中更新。
+3. 动画要简洁、循环流畅，能直观表现主题。
+4. 颜色要符合 {vibe} 风格，并与 colors 字段一致。
+5. 解说词要准确、通俗易懂。
 """
 
 
