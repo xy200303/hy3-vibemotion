@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibemotion — Hy3 科普动画生成器</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🌌 Vibemotion</h1>
+    <p>输入科普主题，让 Hy3 为你生成一段会动的科普解说</p>
+  </header>
+
+  <main class="container">
+    <section class="control-panel">
+      <label for="topic">科普主题</label>
+      <input id="topic" type="text" placeholder="例如：黑洞是如何吞噬物质的？" maxlength="200">
+
+      <label for="vibe">Vibe 风格</label>
+      <select id="vibe">
+        <option value="轻松">轻松</option>
+        <option value="史诗">史诗</option>
+        <option value="治愈">治愈</option>
+      </select>
+
+      <button id="generateBtn">✨ 生成动画</button>
+      <div id="status"></div>
+    </section>
+
+    <section class="result-panel">
+      <div class="card">
+        <h2 id="title">等待生成...</h2>
+        <p id="narration">输入主题并点击生成，Hy3 将为你创作科普动画与解说词。</p>
+      </div>
+
+      <div class="stage-wrapper">
+        <div id="animation-stage"></div>
+      </div>
+
+      <details class="code-card">
+        <summary>查看生成的 p5.js 代码</summary>
+        <pre><code id="codeBlock">// 生成的代码将显示在这里</code></pre>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by <a href="https://github.com/Tencent-Hunyuan/Hy3" target="_blank">Hy3</a> · Built with <a href="https://aider.chat/" target="_blank">Aider</a></p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
