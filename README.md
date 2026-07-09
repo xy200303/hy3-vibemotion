@@ -19,12 +19,19 @@ python main.py
 
 打开浏览器访问 `http://localhost:8000`。
 
+## 演示截图
+
+![Vibemotion 泰勒公式演示](./assets/demo.png)
+
+> 上图为主题「泰勒公式」生成的科普动画：用多项式逼近复杂函数曲线，彩色圆环层层叠加，直观展示数学之美。
+
 ## 使用方式
 
 1. 在输入框中输入科普主题，例如：
    - `黑洞是如何吞噬物质的？`
    - `光合作用的过程`
    - `地震波传播`
+   - `泰勒公式`
 2. 选择「Vibe」风格（轻松 / 史诗 / 治愈）。
 3. 点击「生成动画」。
 4. 等待 Hy3 生成解说词与 p5.js 动画代码。
@@ -34,19 +41,23 @@ python main.py
 
 ```
 hy3-vibemotion/
-├── main.py              # FastAPI 后端：调用 Hy3 OpenAI-compatible API
+├── main.py              # FastAPI 后端：调用 Hy3、校验代码、兜底模板
 ├── static/
 │   ├── index.html       # 前端页面
 │   ├── style.css        # 样式
-│   └── app.js           # 前端交互逻辑
+│   ├── app.js           # 前端交互逻辑
+│   ├── animator.js      # p5.js 模板兜底渲染器
+│   └── p5.min.js        # 本地 p5.js 依赖（iframe 使用）
+├── assets/
+│   └── demo.png         # 演示截图
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
 - **前端**：原生 HTML + CSS + JavaScript，无构建步骤。
-- **动画引擎**：[p5.js](https://p5js.org/)，通过 CDN 引入。
-- **后端**：FastAPI，负责调用 Hy3 并返回安全的 JSON 结构。
+- **动画引擎**：[p5.js](https://p5js.org/)，代码模式使用本地 `p5.min.js`，模板兜底使用 CDN。
+- **后端**：FastAPI，负责调用 Hy3、校验生成的 p5.js 代码、失败时自动降级到模板。
 - **模型**：Hy3（本地 vLLM/SGLang、OpenRouter、TokenHub 均可）。
 
 ## 配置说明
