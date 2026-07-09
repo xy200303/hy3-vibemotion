@@ -39,32 +39,44 @@ def get_hy3_client() -> OpenAI:
 
 
 def build_animation_prompt(topic: str, vibe: str) -> str:
-    """Build the prompt that asks Hy3 to generate a p5.js animation."""
-    return f"""你是一位科普动画导演。请根据用户给出的科普主题，创作一段可在浏览器中循环播放的 p5.js 科普动画。
+    """Build the prompt that asks Hy3 to generate animation parameters."""
+    return f"""你是一位科普动画导演。请根据用户给出的科普主题，为一段 p5.js 科普动画生成参数。
 
 主题：{topic}
 风格（Vibe）：{vibe}
+
+动画使用预定义模板渲染，请从以下模板中选择最合适的一个，并填充参数：
+
+- orbit：中心物体 + 环绕运动的小物体（适合行星、电子、卫星、黑洞吸积盘等）
+- wave：正弦波/波动传播（适合声波、光波、地震波、水波等）
+- pulse：中心向外脉冲/扩散（适合心跳、爆炸、涟漪、引力波等）
+- flow：粒子流动（适合风流、水流、电流、人群流动等）
 
 请严格按以下 JSON 格式输出（不要包含 markdown 代码块，只输出纯 JSON）：
 
 {{
   "title": "动画标题，10 字以内",
   "narration": "2-3 句生动的科普解说词，用于展示在动画下方",
+  "template": "orbit | wave | pulse | flow",
   "colors": {{
     "background": "#RRGGBB",
     "primary": "#RRGGBB",
     "secondary": "#RRGGBB",
     "accent": "#RRGGBB"
   }},
-  "code": "一段完整的、可直接运行的 p5.js 全局模式代码字符串。必须包含 function setup() 和 function draw()。setup() 中只调用 createCanvas(640, 360)。draw() 中实现循环动画。只使用 p5.js 内置图形函数（ellipse, rect, line, arc, triangle, fill, stroke, background, translate, rotate, push, pop 等），不使用图片、字体、视频或外部资源。"
+  "params": {{
+    "center_size": 60,
+    "particle_count": 6,
+    "speed": 0.02,
+    "trails": false
+  }}
 }}
 
 注意：
-1. code 字段必须是一段合法的 JavaScript 代码，可以直接在浏览器中运行，不要包含中文注释。
-2. 只声明全局变量用于状态（如 let angle = 0;），动画逻辑在 draw() 中更新。
-3. 动画要简洁、循环流畅，能直观表现主题。
-4. 颜色要符合 {vibe} 风格，并与 colors 字段一致。
-5. 解说词要准确、通俗易懂。
+1. template 必须是 orbit / wave / pulse / flow 四者之一。
+2. colors 字段的颜色要符合 {vibe} 风格。
+3. params 中的数值要合理：center_size 范围 30-120；particle_count 范围 3-20；speed 范围 0.005-0.08。
+4. 解说词要准确、通俗易懂。
 """
 
 
@@ -76,8 +88,9 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     title: str
     narration: str
+    template: str
     colors: dict
-    code: str
+    params: dict
 
 
 @app.get("/")
@@ -91,7 +104,7 @@ async def root() -> FileResponse:
 
 @app.post("/generate", response_model=GenerateResponse)
 async def generate(req: GenerateRequest) -> GenerateResponse:
-    """Call Hy3 to generate an animation."""
+    """Call Hy3 to generate animation parameters."""
     client = get_hy3_client()
     model = os.getenv("HY3_MODEL", "hy3")
 
@@ -103,7 +116,7 @@ async def generate(req: GenerateRequest) -> GenerateResponse:
             ],
             temperature=0.85,
             top_p=1.0,
-            max_tokens=4096,
+            max_tokens=2048,
             stream=False,
         )
     except Exception as exc:
@@ -126,15 +139,20 @@ async def generate(req: GenerateRequest) -> GenerateResponse:
             detail=f"Failed to parse Hy3 output as JSON: {exc}. Raw output: {raw[:500]}",
         ) from exc
 
-    for key in ("title", "narration", "colors", "code"):
+    for key in ("title", "narration", "template", "colors", "params"):
         if key not in data:
             raise HTTPException(status_code=502, detail=f"Missing field in Hy3 output: {key}")
+
+    template = str(data["template"])
+    if template not in {"orbit", "wave", "pulse", "flow"}:
+        raise HTTPException(status_code=502, detail=f"Invalid template: {template}")
 
     return GenerateResponse(
         title=str(data["title"]),
         narration=str(data["narration"]),
+        template=template,
         colors=data["colors"],
-        code=str(data["code"]),
+        params=data["params"],
     )
 
 
