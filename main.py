@@ -51,13 +51,14 @@ def build_animation_prompt(topic: str, vibe: str) -> str:
 - wave：正弦波/波动传播（适合声波、光波、地震波、水波等）
 - pulse：中心向外脉冲/扩散（适合心跳、爆炸、涟漪、引力波等）
 - flow：粒子流动（适合风流、水流、电流、人群流动等）
+- blackhole：黑洞吞噬/吸积盘（适合黑洞、引力坍缩、时空扭曲等）
 
 请严格按以下 JSON 格式输出（不要包含 markdown 代码块，只输出纯 JSON）：
 
 {{
   "title": "动画标题，10 字以内",
   "narration": "2-3 句生动的科普解说词，用于展示在动画下方",
-  "template": "orbit | wave | pulse | flow",
+  "template": "orbit | wave | pulse | flow | blackhole",
   "colors": {{
     "background": "#RRGGBB",
     "primary": "#RRGGBB",
@@ -144,7 +145,7 @@ async def generate(req: GenerateRequest) -> GenerateResponse:
             raise HTTPException(status_code=502, detail=f"Missing field in Hy3 output: {key}")
 
     template = str(data["template"])
-    if template not in {"orbit", "wave", "pulse", "flow"}:
+    if template not in {"orbit", "wave", "pulse", "flow", "blackhole"}:
         raise HTTPException(status_code=502, detail=f"Invalid template: {template}")
 
     return GenerateResponse(
@@ -159,4 +160,4 @@ async def generate(req: GenerateRequest) -> GenerateResponse:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8001)
